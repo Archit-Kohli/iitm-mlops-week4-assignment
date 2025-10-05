@@ -1,0 +1,4 @@
+[core]
+    remote = gcs-remote
+['remote "gcs-remote"']
+    url = gs://iitm-mlops-472905-iris-data/dvc-storage
