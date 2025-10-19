@@ -3,3 +3,4 @@ pandas
 joblib
 dvc[gsspec]
 dvc-gs
+pytest
