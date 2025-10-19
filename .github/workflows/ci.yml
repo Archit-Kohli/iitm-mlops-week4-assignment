@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -50,5 +54,5 @@ jobs:
         pytest >> report.md
         echo "\`\`\`" >> report.md
 
-        # Send the report as a comment
-        cml-send-comment report.md
+        # Update this command
+        cml comment create report.md
