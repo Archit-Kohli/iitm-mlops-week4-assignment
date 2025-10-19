@@ -44,6 +44,7 @@ jobs:
       uses: iterative/setup-cml@v1
     
     - name: Generate CML report
+      if: github.event_name == 'pull_request'
       env:
         REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
@@ -54,5 +55,4 @@ jobs:
         pytest >> report.md
         echo "\`\`\`" >> report.md
 
-        # Update this command
         cml comment create report.md
