@@ -1,6 +1,6 @@
-dvc[gs]
-joblib==1.5.2
-numpy==2.3.3
-pandas==2.3.3
-pytest==8.4.2
-scikit-learn==1.7.2
+scikit-learn
+pandas
+joblib
+dvc[gcs]
+pytest
+cml
