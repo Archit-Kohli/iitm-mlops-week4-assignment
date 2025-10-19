@@ -13,6 +13,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -30,3 +35,15 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+    
+    - name: Generate CML report
+      env:
+        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "## MLOps Week 4 Report" > report.md
+        echo "### Pytest Results" >> report.md
+        echo "\`\`\`" >> report.md
+        pytest >> report.md
+        echo "\`\`\`" >> report.md
+
+        cml-send-comment report.md
