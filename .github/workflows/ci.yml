@@ -36,6 +36,9 @@ jobs:
       run: |
         pytest
     
+    - name: Set up CML
+      uses: iterative/setup-cml@v1
+    
     - name: Generate CML report
       env:
         REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
