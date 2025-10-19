@@ -52,7 +52,7 @@ jobs:
         echo "## MLOps Week 4 Report" > report.md
         echo "### Pytest Results" >> report.md
         echo "\`\`\`" >> report.md
-        pytest >> report.md
+        pytest -sv >> report.md
         echo "\`\`\`" >> report.md
 
         cml comment create report.md
