@@ -25,7 +25,6 @@ jobs:
 
     - name: DVC Pull
       run: |
-        pip install dvc dvc-gcs
         dvc pull
 
     - name: Test with pytest
