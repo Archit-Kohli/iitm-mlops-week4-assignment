@@ -5,7 +5,7 @@ joblib==1.1.0
 
 # DVC and GCS (Pinned to versions compatible with Python 3.8)
 dvc==2.58.2
-dvc-gcs==2.21.0
+dvc-gs==2.21.0
 
 # Testing and CI/CD
 pytest
