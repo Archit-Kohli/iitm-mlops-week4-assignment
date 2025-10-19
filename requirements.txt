@@ -1,6 +1,6 @@
 scikit-learn
 pandas
 joblib
-dvc[gsspec]
+dvc[gcs]
 dvc-gs
 pytest
