@@ -18,10 +18,10 @@ jobs:
       with:
         credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-    - name: Set up Python 3.8
+    - name: Set up Python 3.12.3
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: '3.12.3'
 
     - name: Install dependencies
       run: |
@@ -40,10 +40,12 @@ jobs:
       env:
         REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        # Create a report in a markdown file
         echo "## MLOps Week 4 Report" > report.md
         echo "### Pytest Results" >> report.md
         echo "\`\`\`" >> report.md
         pytest >> report.md
         echo "\`\`\`" >> report.md
 
+        # Send the report as a comment
         cml-send-comment report.md
