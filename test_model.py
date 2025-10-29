@@ -20,7 +20,7 @@ def test_model_accuracy():
     """
     print("\n--- Starting model evaluation test ---")
     
-    model_name = "iris-logistic-regression-model"
+    model_name = "iris-lr-model"
     model_uri = f"models:/{model_name}/latest"
     
     print(f"Using latest model from Mlflow: {model_uri}")

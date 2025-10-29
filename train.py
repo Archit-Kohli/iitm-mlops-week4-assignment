@@ -9,7 +9,7 @@ import os
 DATA_PATH = 'data/iris.csv'
 OUTPUT_DIR = 'outputs'
 MODEL_PATH = os.path.join(OUTPUT_DIR, 'model.joblib')
-EXPERIMENT_NAME = "iris-logistic-regression"
+EXPERIMENT_NAME = "iris-lr"
 
 mlflow.set_tracking_uri("http://127.0.0.1:8100")
 mlflow.set_experiment(EXPERIMENT_NAME)
@@ -44,7 +44,7 @@ for C_value in hyperparameters:
         mlflow.sklearn.log_model(
             sk_model=model,
             artifact_path="model",
-            registered_model_name="iris-logistic-regression-model"
+            registered_model_name="iris-lr-model"
         )
         
         print(f"Model with C={C_value} logged and registered.")
