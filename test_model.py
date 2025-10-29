@@ -1,6 +1,8 @@
 import pandas as pd
-import joblib
 from sklearn.metrics import accuracy_score
+import mlflow
+
+mlflow.set_tracking_uri("http://127.0.0.1:8100")
 
 def test_data_columns():
     """
@@ -17,7 +19,13 @@ def test_model_accuracy():
     Tests if the model's accuracy is above 90%.
     """
     print("\n--- Starting model evaluation test ---")
-    model = joblib.load('outputs/model.joblib')
+    
+    model_name = "iris-logistic-regression-model"
+    model_uri = f"models:/{model_name}/latest"
+    
+    print(f"Using latest model from Mlflow: {model_uri}")
+    model = mlflow.sklearn.load_model(model_uri)
+    
     data = pd.read_csv('data/iris.csv')
     print("Model and data loaded successfully.")
     
@@ -29,4 +37,4 @@ def test_model_accuracy():
     print(f"Model accuracy: {accuracy:.2f}")
     
     assert accuracy > 0.85
-    print("✅ Model evaluation complete: Accuracy is above the 90% threshold.")
+    print("✅ Model evaluation complete: Accuracy is above the 85% threshold.")
