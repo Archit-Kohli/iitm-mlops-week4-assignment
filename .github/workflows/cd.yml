@@ -29,6 +29,9 @@ jobs:
     - name: 'Push Docker image to Artifact Registry'
       run: 'docker push us-central1-docker.pkg.dev/iitm-mlops-472905/iris-api-repo/iris-api:latest'
 
+    - name: 'Install gke-gcloud-auth-plugin for kubectl'
+      run: 'gcloud components install gke-gcloud-auth-plugin'
+
     - name: 'Deploy to GKE'
       run: |
         gcloud container clusters get-credentials iris-api-cluster --region us-central1 --project iitm-mlops-472905
