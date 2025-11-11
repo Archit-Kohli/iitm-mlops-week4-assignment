@@ -1,4 +1,4 @@
-name: MLOps CD - Deploy to GKE
+name: MLOps CD - Build and Deploy
 
 on:
   push:
@@ -31,9 +31,19 @@ jobs:
 
     - name: 'Install gke-gcloud-auth-plugin for kubectl'
       run: 'gcloud components install gke-gcloud-auth-plugin'
+      
+    - name: 'Get GKE credentials'
+      run: |
+        gcloud container clusters get-credentials iris-api-cluster-v2 --region us-east1-b --project iitm-mlops-472905
 
     - name: 'Deploy to GKE'
       run: |
-        gcloud container clusters get-credentials iris-api-cluster --region us-central1 --project iitm-mlops-472905
         kubectl apply -f deployment.yaml
         kubectl apply -f service.yaml
+        kubectl apply -f hpa.yaml
+        
+    - name: 'Wait for deployment'
+      run: |
+        echo "Waiting for deployment rollout to finish..."
+        kubectl rollout status deployment/iris-api-deployment --timeout=300s
+        echo "Deployment successful."

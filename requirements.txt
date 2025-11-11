@@ -64,6 +64,7 @@ google-auth==2.41.1
 google-auth-oauthlib==1.2.2
 google-cloud-core==2.4.3
 google-cloud-storage==3.4.0
+google-cloud-trace==1.17.0
 google-crc32c==1.7.1
 google-resumable-media==2.7.2
 googleapis-common-protos==1.70.0
@@ -72,6 +73,8 @@ graphene==3.4.3
 graphql-core==3.2.6
 graphql-relay==3.2.0
 greenlet==3.2.4
+grpcio==1.76.0
+grpcio-status==1.76.0
 gto==1.8.0
 gunicorn==23.0.0
 h11==0.16.0
@@ -99,7 +102,9 @@ numpy==2.3.3
 oauthlib==3.3.1
 omegaconf==2.3.0
 opentelemetry-api==1.38.0
+opentelemetry-exporter-gcp-trace==1.11.0
 opentelemetry-proto==1.38.0
+opentelemetry-resourcedetector-gcp==1.11.0a0
 opentelemetry-sdk==1.38.0
 opentelemetry-semantic-conventions==0.59b0
 orjson==3.11.3

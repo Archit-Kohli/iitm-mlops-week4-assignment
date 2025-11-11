@@ -1,51 +1,140 @@
 import logging
+import time
+import json
 import pandas as pd
 import mlflow
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Request, HTTPException, Response
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ValidationError
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# --- OpenTelemetry Setup (from demo_log.py) ---
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
 
-MLFLOW_TRACKING_URI = "http://34.44.214.136:8100"
-logging.info(f"Setting MLflow tracking URI to: {MLFLOW_TRACKING_URI}")
-mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+try:
+    trace.set_tracer_provider(TracerProvider())
+    tracer = trace.get_tracer(__name__)
+    span_processor = BatchSpanProcessor(CloudTraceSpanExporter())
+    trace.get_tracer_provider().add_span_processor(span_processor)
+    print("OpenTelemetry setup successful.")
+except Exception as e:
+    print(f"Failed to set up OpenTelemetry: {e}")
 
+# --- Structured Logging Setup (from demo_log.py) ---
+logger = logging.getLogger("iris-api-service")
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter(json.dumps({
+    "severity": "%(levelname)s",
+    "message": "%(message)s",
+    "timestamp": "%(asctime)s"
+}))
+handler.setFormatter(formatter)
+if not logger.hasHandlers():
+    logger.addHandler(handler)
+
+# --- FastAPI App ---
+app = FastAPI()
+
+# --- Model Loading  ---
+model = None
+try:
+    MLFLOW_TRACKING_URI = "http://34.10.174.148:8100"
+    logger.info(f"Setting MLflow tracking URI to: {MLFLOW_TRACKING_URI}")
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    
+    model_name = "iris-lr-model"
+    model_uri = f"models:/{model_name}/latest"
+    
+    logger.info(f"Attempting to load model '{model_name}' from URI: {model_uri}")
+    model = mlflow.sklearn.load_model(model_uri)
+    logger.info("Successfully loaded MLflow model.")
+except Exception as e:
+    logger.error(f"Failed to load model on startup. Error: {e}")
+
+# --- App State & Probes ---
+@app.on_event("startup")
+async def startup_event():
+    # This check ensures the app reports 'ready' only if the model loaded.
+    if model is None:
+        logger.warning("Model is not loaded. Readiness probe will fail.")
+        app_state["is_ready"] = False
+    else:
+        logger.info("Model is loaded. Application is ready.")
+        app_state["is_ready"] = True
+
+app_state = {"is_ready": False, "is_alive": True}
+
+@app.get("/live_check", tags=["Probe"])
+async def liveness_probe():
+    if app_state["is_alive"]:
+        return {"status": "alive"}
+    return Response(status_code=500)
+
+@app.get("/ready_check", tags=["Probe"])
+async def readiness_probe():
+    if app_state["is_ready"] and model is not None:
+        return {"status": "ready"}
+    return Response(status_code=503) # Service Unavailable
+
+# --- Input Schema ---
 class IrisInput(BaseModel):
     sepal_length: float
     sepal_width: float
     petal_length: float
     petal_width: float
 
-app = FastAPI()
+# --- Exception Handler (from demo_log.py) ---
+@app.exception_handler(Exception)
+async def exception_handler(request: Request, exc: Exception):
+    span = trace.get_current_span()
+    trace_id = format(span.get_span_context().trace_id, "032x")
+    logger.exception(json.dumps({
+        "event": "unhandled_exception",
+        "trace_id": trace_id,
+        "path": str(request.url),
+        "error": str(exc)
+    }))
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "trace_id": trace_id},
+    )
 
-model_name = "iris-lr-model"
-model_uri = f"models:/{model_name}/latest"
-model = None
-
-try:
-    logging.info(f"Attempting to load model '{model_name}' from URI: {model_uri}")
-    model = mlflow.sklearn.load_model(model_uri)
-    logging.info("Successfully loaded MLflow model.")
-except Exception as e:
-    logging.error(f"Failed to load model. Error: {e}")
-    exit()
-
-
+# --- Predict Endpoint ---
 @app.post("/predict")
-def predict(data: IrisInput):
-    """
-    This endpoint takes Iris measurements as input and returns the predicted species.
-    """
-    input_data = [[data.sepal_length, data.sepal_width, data.petal_length, data.petal_width]]
-    input_df = pd.DataFrame(input_data, columns=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'])
+async def predict(data: IrisInput):
+    with tracer.start_as_current_span("model_inference") as span:
+        start_time = time.time()
+        trace_id = format(span.get_span_context().trace_id, "032x")
 
-    prediction = model.predict(input_df)
+        try:
+            input_data = [[data.sepal_length, data.sepal_width, data.petal_length, data.petal_width]]
+            input_df = pd.DataFrame(input_data, columns=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'])
+            
+            prediction = model.predict(input_df)
+            result = {"prediction": prediction[0]}
+            latency = round((time.time() - start_time) * 1000, 2)
 
-    return {"prediction": prediction[0]}
+            logger.info(json.dumps({
+                "event": "prediction",
+                "trace_id": trace_id,
+                "input": data.dict(),
+                "result": result,
+                "latency_ms": latency,
+                "status": "success"
+            }))
+            return result
+
+        except Exception as e:
+            logger.exception(json.dumps({
+                "event": "prediction_error",
+                "trace_id": trace_id,
+                "error": str(e)
+            }))
+            raise HTTPException(status_code=500, detail="Prediction failed")
 
 @app.get("/")
 def read_root():
-    """
-    A simple endpoint to test if the API is running.
-    """
-    return {"message": "Welcome to the Iris Prediction API"}
+    return {"message": "Welcome to the Iris Prediction API (Week 7 Version)"}

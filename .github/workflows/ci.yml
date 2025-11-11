@@ -49,7 +49,7 @@ jobs:
         REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Create a report in a markdown file
-        echo "## MLOps Week 4 Report" > report.md
+        echo "## MLOps Week 7 Report" > report.md
         echo "### Pytest Results" >> report.md
         echo "\`\`\`" >> report.md
         pytest -sv >> report.md

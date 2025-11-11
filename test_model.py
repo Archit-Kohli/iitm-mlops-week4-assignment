@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.metrics import accuracy_score
 import mlflow
 
-mlflow.set_tracking_uri("http://34.44.214.136:8100")
+mlflow.set_tracking_uri("http://34.10.174.148:8100")
 
 def test_data_columns():
     """

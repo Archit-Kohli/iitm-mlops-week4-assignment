@@ -1,2 +1,5 @@
 .venv
 ./outputs
+*.ipynb_checkpoints
+mlruns
+mlartifacts

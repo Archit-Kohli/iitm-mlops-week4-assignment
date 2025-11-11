@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: iris-api-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: iris-api
@@ -12,8 +12,30 @@ spec:
       labels:
         app: iris-api
     spec:
+      serviceAccountName: telemetry-access
       containers:
-      - name: iris-api
+      - name: iris-api-container
         image: us-central1-docker.pkg.dev/iitm-mlops-472905/iris-api-repo/iris-api:latest
         ports:
-        - containerPort: 8888
+        - containerPort: 8200
+        
+        readinessProbe:
+          httpGet:
+            path: /ready_check
+            port: 8200
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /live_check
+            port: 8200
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
