@@ -102,7 +102,7 @@ This manifest tells GKE **how to expose** our application to the internet.
 This tells GKE when to scale and spin up new pods.
 
 * Uses average CPU utilisation, checks if it goes above 60% then spins up a new pod
-* 
+
 * Sets the `minReplicas` and `maxReplicas` to tell GKE the minimum and maximum number of pods
 ---
 
