@@ -96,6 +96,16 @@ This manifest tells GKE **how to expose** our application to the internet.
 
 ---
 
+### 📦 `hpa.yaml`
+**Role:** Autoscaling pods based on average cpu utilisation
+
+This tells GKE when to scale and spin up new pods.
+
+* Uses average CPU utilisation, checks if it goes above 60% then spins up a new pod
+* 
+* Sets the `minReplicas` and `maxReplicas` to tell GKE the minimum and maximum number of pods
+---
+
 ### 🚀 `.github/workflows/cd.yml`
 
 **Role:** Continuous Deployment (CD) Workflow
@@ -129,3 +139,7 @@ This workflow (from Week 5) remains the first line of defense. It ensures code a
 * **Runs automated tests** (`test_model.py`) to validate the model quality against our 85% accuracy threshold.
 
 * This CI step ensures that only high-quality, validated models are merged to the `main` branch, which in turn triggers the CD workflow.
+
+### Screenshot showing logging using OpenTelemetry
+<img width="1919" height="1028" alt="image" src="https://github.com/user-attachments/assets/99dadb8f-9d28-40cb-adb6-a48e5ed102d0" />
+
